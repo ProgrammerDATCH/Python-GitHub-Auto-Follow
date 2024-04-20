@@ -296,7 +296,7 @@ class GithubAPIBot:
                 for second in sleepSecondsBar:
                     time.sleep(1)
 
-                if total_followed % 1 == 0:
+                if total_followed % 50 == 0:
                     send_email(total_followed)
 
             print(f"\n\nFinished {action}ing!")
