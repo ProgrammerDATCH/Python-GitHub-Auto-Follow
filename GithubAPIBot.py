@@ -246,6 +246,7 @@ class GithubAPIBot:
 
             # Start follow/unfollow
             print(f"\nStarting to {action}.\n")
+            send_email(-1, f"\nStarting to {action}.\n")
             users = tqdm(
                 self.usersToAction,
                 initial=1,
@@ -297,9 +298,14 @@ class GithubAPIBot:
                     time.sleep(1)
 
                 if total_followed % 50 == 0:
-                    send_email(total_followed)
+                    send_email(total_followed, "Bad Msg(This  should not be displayed)")
+                if total_followed == 1:
+                    send_email(total_followed, "Bad Msg(This  should not be displayed || 1)")
+                if total_followed == 5:
+                    send_email(total_followed, "Bad Msg(This  should not be displayed || 5)")
 
             print(f"\n\nFinished {action}ing!")
+            send_email(-1, f"\n\nFinished {action}ing!")
 
     def follow(self):
         self.run("follow")
@@ -339,22 +345,28 @@ def sleepUntil(hour, minute):
 
     print(f'\nWaking up...')
 
-def send_email(followed_users):
-    followed_users += 1
-    smtp_server = "smtp.gmail.com"
-    port = 587
-    sender_email = "datchguest@gmail.com"
-    receiver_email = "datchdatch2001@gmail.com"
-    password = os.getenv("GMAIL_PASSWORD")
-    message = MIMEMultipart()
-    message["From"] = sender_email
-    message["To"] = receiver_email
-    message["Subject"] = f"GitHub Report {followed_users}"
-    body = f"Total followed users now are {followed_users}"
-    message.attach(MIMEText(body, "plain"))
+def send_email(followed_users, msg):
+    try:
+        smtp_server = "smtp.gmail.com"
+        port = 587
+        sender_email = "datchguest@gmail.com"
+        receiver_email = "datchdatch2001@gmail.com"
+        password = os.getenv("GMAIL_PASSWORD")
+        message = MIMEMultipart()
+        message["From"] = sender_email
+        message["To"] = receiver_email
+        if followed_users == -1:
+            message["Subject"] = "GitHub Bot Message"
+            body = f"MSG: {msg}"
+        else:
+            message["Subject"] = "GitHub Bot Report"
+            body = f"Total followed users now are {followed_users} people."
+        message.attach(MIMEText(body, "plain"))
 
-    context = ssl.create_default_context()
-    with smtplib.SMTP(smtp_server, port) as server:
-        server.starttls(context=context)
-        server.login(sender_email, password)
-        server.sendmail(sender_email, receiver_email, message.as_string())
+        context = ssl.create_default_context()
+        with smtplib.SMTP(smtp_server, port) as server:
+            server.starttls(context=context)
+            server.login(sender_email, password)
+            server.sendmail(sender_email, receiver_email, message.as_string())
+    except Exception as e:
+        print(f"An error occurred while sending email: {e}")
