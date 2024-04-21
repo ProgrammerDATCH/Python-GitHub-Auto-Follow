@@ -13,4 +13,4 @@ def follow(username):
     return jsonify({"message": "Bot started following followers of {}".format(username)}), 200
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
